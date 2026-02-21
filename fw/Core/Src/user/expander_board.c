@@ -1,5 +1,6 @@
 #include "user/expander_board.h"
 #include "fatfs.h"
+#include <string.h>
 /* SPI to the sd card */
 SPI_HandleTypeDef hspi3;
 /* Variables to write to the SD card */
@@ -97,4 +98,83 @@ BOOL expander_is_kph_selected(void)
 		return TRUE;
 	}
 	return FALSE;
+}
+
+/*! \fn     expander_sd_open_csv(void)
+*   \brief  Open or create CSV log file on SD card
+*   \return TRUE if file opened successfully
+*/
+BOOL expander_sd_open_csv(void)
+{
+	FRESULT res;
+
+	res = f_open(&expander_board_file, "log.csv", FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
+	if (res != FR_OK)
+	{
+		return FALSE;
+	}
+
+	/* Check if file is new (empty) and write CSV header */
+	if (f_size(&expander_board_file) == 0)
+	{
+		f_puts("nr,timestamp_ms,speed_kmh,duration_ms,length_m,type\n", &expander_board_file);
+	}
+
+	/* Seek to end for appending */
+	f_lseek(&expander_board_file, f_size(&expander_board_file));
+	f_sync(&expander_board_file);
+	return TRUE;
+}
+
+/*! \fn     expander_sd_log_vehicle(vd_event_t* evt)
+*   \brief  Write one vehicle event as CSV line to SD card
+*   \param  evt     Pointer to completed vehicle event
+*/
+/* Simple uint32 to string, returns pointer to end of written chars */
+static char* u32_to_str(char* buf, uint32_t val)
+{
+	char tmp[10];
+	int i = 0;
+
+	if (val == 0)
+	{
+		*buf++ = '0';
+		return buf;
+	}
+	while (val > 0)
+	{
+		tmp[i++] = '0' + (val % 10);
+		val /= 10;
+	}
+	while (i > 0)
+	{
+		*buf++ = tmp[--i];
+	}
+	return buf;
+}
+
+void expander_sd_log_vehicle(vd_event_t* evt)
+{
+	char line_buf[80];
+	char* p = line_buf;
+	uint16_t speed_int = (uint16_t)evt->speed_kmh;
+	uint16_t speed_dec = (uint16_t)((evt->speed_kmh - speed_int) * 10);
+	uint16_t len_int = (uint16_t)evt->length_m;
+	uint16_t len_dec = (uint16_t)((evt->length_m - len_int) * 10);
+	uint32_t duration_ms = (uint32_t)(evt->duration_frames * 28.6f);
+
+	/* Build CSV line: nr,timestamp_ms,speed_kmh,duration_ms,length_m,type */
+	p = u32_to_str(p, evt->event_number); *p++ = ',';
+	p = u32_to_str(p, evt->timestamp_ms); *p++ = ',';
+	p = u32_to_str(p, speed_int); *p++ = '.';
+	p = u32_to_str(p, speed_dec); *p++ = ',';
+	p = u32_to_str(p, duration_ms); *p++ = ',';
+	p = u32_to_str(p, len_int); *p++ = '.';
+	p = u32_to_str(p, len_dec); *p++ = ',';
+	memcpy(p, evt->type, strlen(evt->type)); p += strlen(evt->type);
+	*p++ = '\n';
+	*p = '\0';
+
+	f_puts(line_buf, &expander_board_file);
+	f_sync(&expander_board_file);
 }

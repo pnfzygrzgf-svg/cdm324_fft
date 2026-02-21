@@ -9,6 +9,7 @@
 
 /* Prototypes */
 uint16_t analog_compute_fft_on_cplted_sequence(BOOL remove_low_freqs);
+uint16_t analog_get_last_raw_peak_freq(void);
 void analog_output_current_fft_to_uart(uint16_t nb_bins);
 BOOL analog_get_and_clear_adc_measurement_done(void);
 void analog_output_conversion_buffer_to_uart(void);

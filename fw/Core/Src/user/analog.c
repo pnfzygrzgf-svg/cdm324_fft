@@ -15,6 +15,7 @@ float32_t analog_temp_float_array[1024];
 float32_t analog_rfft_output[1024];
 uint16_t analog_last_peak_indexes[32];
 uint16_t analog_cur_peak_fill_idx = 0;
+uint16_t analog_last_raw_peak_freq = 0;
 
 
 /*! \fn     DMA1_Channel1_IRQHandler(void)
@@ -210,6 +211,16 @@ uint16_t analog_compute_fft_on_cplted_sequence(BOOL remove_low_freqs)
 	/* Extract peak frequency */
 	arm_max_f32(analog_temp_float_array, ARRAY_SIZE(analog_result_buffer1)/2, &max_value, &max_index);
 
+	/* Store raw (unsmoothed) peak frequency for vehicle detection */
+	if (max_value < 100000)
+	{
+		analog_last_raw_peak_freq = 0;
+	}
+	else
+	{
+		analog_last_raw_peak_freq = (uint16_t)(max_index * 35714 / ARRAY_SIZE(analog_result_buffer1));
+	}
+
 	/* Fill current peak index if peak is valid */
 	if (max_value < 100000)
 	{
@@ -246,4 +257,13 @@ uint16_t analog_compute_fft_on_cplted_sequence(BOOL remove_low_freqs)
 	}
 	max_freq = max_freq * 35714 / ARRAY_SIZE(analog_result_buffer1);
 	return (uint16_t)max_freq;
+}
+
+/*! \fn     analog_get_last_raw_peak_freq(void)
+*   \brief  Get last raw (unsmoothed) peak frequency
+*   \return Raw peak frequency in Hz, 0 if no valid peak
+*/
+uint16_t analog_get_last_raw_peak_freq(void)
+{
+	return analog_last_raw_peak_freq;
 }

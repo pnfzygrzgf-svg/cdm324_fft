@@ -1,3 +1,4 @@
+#include "user/vehicle_detect.h"
 #include "user/expander_board.h"
 #include "user/display.h"
 #include "user/defines.h"
@@ -20,6 +21,7 @@ void main_user(void)
 {
 	BOOL output_debug_enabled = FALSE;
 	BOOL sd_card_initialized = FALSE;
+	BOOL sd_csv_opened = FALSE;
 	BOOL remove_low_freqs = FALSE;
 	uint16_t last_fft_return = 0;
 	uint16_t fft_nb_counter = 0;
@@ -53,6 +55,23 @@ void main_user(void)
 		sd_card_initialized = TRUE;
 	}
 
+	/* Vehicle detection init */
+	vd_init();
+
+	/* Open CSV log file if SD card present */
+	if (sd_card_initialized != FALSE)
+	{
+		if (expander_sd_open_csv() != FALSE)
+		{
+			sd_csv_opened = TRUE;
+			debug_print_string("SD card: log.csv opened\r\n");
+		}
+		else
+		{
+			debug_print_string("SD card: failed to open log.csv\r\n");
+		}
+	}
+
 	/* Trigger analog conversions */
 	analog_trigger_conversion();
 
@@ -78,11 +97,19 @@ void main_user(void)
 					/* Valid return? */
 					if (last_fft_return == 0)
 					{
-						/* Idle animation */
-						display_animation_step(idle_anim_st++);
-						if (idle_anim_st == 12)
+						/* Show vehicle count when idle */
+						uint32_t count = vd_get_vehicle_count();
+						if (count > 0)
 						{
-							idle_anim_st = 0;
+							display_speed((uint16_t)(count % 10000));
+						}
+						else
+						{
+							display_animation_step(idle_anim_st++);
+							if (idle_anim_st == 12)
+							{
+								idle_anim_st = 0;
+							}
 						}
 					}
 					else
@@ -114,6 +141,24 @@ void main_user(void)
 
 				/* Compute FFT */
 				last_fft_return = analog_compute_fft_on_cplted_sequence(remove_low_freqs);
+
+				/* Vehicle detection */
+				if (vd_process_frame(analog_get_last_raw_peak_freq()) != FALSE)
+				{
+					vd_event_t* evt = vd_get_last_event();
+
+					/* Log to SD card */
+					if (sd_csv_opened != FALSE)
+					{
+						expander_sd_log_vehicle(evt);
+					}
+
+					/* Debug output */
+					debug_printf("#%lu: %u km/h, %s\r\n",
+						(unsigned long)evt->event_number,
+						(uint16_t)evt->speed_kmh,
+						evt->type);
+				}
 
 				/* Debug FFT output buffer ? */
 				if(output_debug_enabled != FALSE)

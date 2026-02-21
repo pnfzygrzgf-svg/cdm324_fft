@@ -1,6 +1,10 @@
 # Folders
 fw/Release
 fw/Debug
+.claude/
+
+# Binary firmware backups
+*.bin
 kicad/cdm324_v2/cdm324_v2-backups
 kicad/cdm324_exp/cdm324_exp-backups
 scripts/archives
@@ -130,6 +134,9 @@ celerybeat.pid
 .venv
 env/
 venv/
+
+# Config files
+scripts/config.ini
 ENV/
 env.bak/
 venv.bak/

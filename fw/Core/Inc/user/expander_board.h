@@ -3,6 +3,7 @@
 
 #include "stm32f3xx_hal.h"
 #include "user/defines.h"
+#include "user/vehicle_detect.h"
 
 /* Defines */
 #define SD_CD_Pin 			GPIO_PIN_0
@@ -17,5 +18,7 @@
 /* Prototypes */
 BOOL expander_is_kph_selected(void);
 BOOL expander_init(void);
+BOOL expander_sd_open_csv(void);
+void expander_sd_log_vehicle(vd_event_t* evt);
 
 #endif
