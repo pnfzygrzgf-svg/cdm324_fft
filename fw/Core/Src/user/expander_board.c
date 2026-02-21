@@ -157,8 +157,8 @@ void expander_sd_log_vehicle(vd_event_t* evt)
 {
 	char line_buf[80];
 	char* p = line_buf;
-	uint16_t speed_int = (uint16_t)evt->speed_kmh;
-	uint16_t speed_dec = (uint16_t)((evt->speed_kmh - speed_int) * 10);
+	uint16_t speed_int = evt->speed_kmh;
+	uint16_t speed_dec = 0;
 	uint16_t len_int = (uint16_t)evt->length_m;
 	uint16_t len_dec = (uint16_t)((evt->length_m - len_int) * 10);
 	uint32_t duration_ms = (uint32_t)(evt->duration_frames * 28.6f);

@@ -142,8 +142,8 @@ void main_user(void)
 				/* Compute FFT */
 				last_fft_return = analog_compute_fft_on_cplted_sequence(remove_low_freqs);
 
-				/* Vehicle detection */
-				if (vd_process_frame(analog_get_last_raw_peak_freq()) != FALSE)
+				/* Vehicle detection with display km/h value */
+				if (vd_process_frame((uint16_t)(last_fft_return * 0.2262295)) != FALSE)
 				{
 					vd_event_t* evt = vd_get_last_event();
 
@@ -156,7 +156,7 @@ void main_user(void)
 					/* Debug output */
 					debug_printf("#%lu: %u km/h, %s\r\n",
 						(unsigned long)evt->event_number,
-						(uint16_t)evt->speed_kmh,
+						evt->speed_kmh,
 						evt->type);
 				}
 
