@@ -1,4 +1,5 @@
 #include "user/vehicle_detect.h"
+#include "user/i2c_slave.h"
 #include "user/expander_board.h"
 #include "user/display.h"
 #include "user/defines.h"
@@ -45,6 +46,9 @@ void main_user(void)
 		debug_print_string("Display not found!\r\n");
 		while(1);
 	}
+
+	/* I2C slave init (for ESP32 communication) */
+	i2c_slave_init();
 
 	/* Analog input init */
 	analog_init();
@@ -141,6 +145,9 @@ void main_user(void)
 
 				/* Compute FFT */
 				last_fft_return = analog_compute_fft_on_cplted_sequence(remove_low_freqs);
+
+				/* Update I2C slave with current speed for ESP32 */
+				i2c_slave_update_speed((uint16_t)(last_fft_return * 0.2262295));
 
 				/* Vehicle detection with display km/h value */
 				if (vd_process_frame((uint16_t)(last_fft_return * 0.2262295)) != FALSE)

@@ -257,6 +257,8 @@ class CDM324MonitorApp(tk.Tk):
 						self.com_port_choice.set(com_port)
 						self.connect_status_label.config(text="Connected")
 						self.status_indicator.config(fg=GREEN)
+						if isinstance(cdm_version, bytes):
+							cdm_version = cdm_version.decode(errors="replace")
 						self.output_to_console(cdm_version)
 						self.com_port = com_port
 						break

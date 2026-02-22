@@ -9,7 +9,7 @@ typedef int32_t BOOL;
 
 /* FW defines */
 #define FW_MAJOR	0
-#define FW_MINOR	2
+#define FW_MINOR	6
 
 /* Standard defines */
 #define FALSE                   0
