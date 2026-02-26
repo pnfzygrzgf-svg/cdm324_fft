@@ -60,6 +60,10 @@ If you don't have the companion expansion board, you may use [STM32 Flash loader
 - release nRESET  
 - releae BOOT0  
 
+## License
+
+Hardware designs (KiCad) are licensed under [CERN OHL v1.2](http://ohwr.org/cernohl), Copyright Stephan Electronics, 2023.
+
 ## Sample Arduino code to fetch speed from device
 
 ```c
