@@ -11,6 +11,23 @@ The assembly may be purchased here: <a href="https://www.tindie.com/products/ste
 - <b>kicad</b>: kicad source files for the "backpack" (cdm324_v2) and the "expansion board" (cdm324_exp)
 - <b>scripts</b>: python source files for the tools that are used together with the expansion board
 
+## Fork Additions
+
+This fork adds the following features on top of the original firmware:
+
+### Vehicle Detection & SD Logging (fw v0.2)
+- State machine that detects vehicles based on a speed threshold (>10 km/h)
+- Car/truck classification by estimating length from speed and pass-through duration
+- CSV logging to SD card (`log.csv`) with speed, duration, length and vehicle type
+
+### I2C Slave for ESP32 (fw v0.6)
+- I2C2 slave interface (address 0x10) that provides the current speed reading
+- Allows an ESP32 to query speed without using UART
+
+### Python Script Improvements
+- macOS support for the GUI and serial tools
+- Fixed bytes handling bug in the GUI
+
 ## Quick Interfacing Guide (to be completed)
 <p align="center">
   <img src="https://www.limpkin.fr/public/cdm324_v2/exp_pinout.png" width="500" alt="CDM324"/>
